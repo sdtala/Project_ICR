@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Method & parameter help · ICR Site Selector{% endblock %}
+{% block content %}
+<section class="help-hero">
+  <div>
+    <a class="back-link" href="{{ url_for('index') }}">← Back to analysis</a>
+    <p class="eyebrow">Methodology guide</p>
+    <h1>How the model chooses useful Operator X sites.</h1>
+    <p>A picture-first explanation of geographic gaps, local density, and why selected sites should not bunch together.</p>
+  </div>
+</section>
+
+<div class="notice guardrail"><strong>Important boundary</strong> This is a map-based planning aid. It finds geographic gaps, but it cannot see radio signal, hills, buildings, users, traffic, capacity, cost, or site readiness.</div>
+
+<section class="panel help-section school-guide">
+  <h2>The whole idea in one sentence</h2>
+  <p>Choose X sites that are far enough from B sites to fill useful spaces, while avoiding a portfolio in which many chosen X sites sit almost on top of one another.</p>
+  <div class="shape-key" aria-label="Diagram symbol key">
+    <span><i class="key-shape key-b">B</i>Existing B site</span>
+    <span><i class="key-shape key-x">X</i>X candidate</span>
+    <span><i class="key-shape key-selected">✓</i>Selected X site</span>
+    <span><i class="key-shape key-redundant">×</i>Too close / redundant</span>
+  </div>
+</section>
+
+<section class="panel help-section">
+  <h2>Step 1: Measure the gap to Operator B</h2>
+  <div class="diagram-layout">
+    <figure class="method-figure">
+      <svg viewBox="0 0 560 250" role="img" aria-labelledby="gap-title gap-desc">
+        <title id="gap-title">Distance from an X candidate to its nearest B site</title>
+        <desc id="gap-desc">Three circular B sites and one diamond X candidate. A dashed line joins X to the closest B site and is labelled gap distance.</desc>
+        <line class="geo-guide" x1="365" y1="128" x2="455" y2="70"/>
+        <line class="geo-guide faint" x1="365" y1="128" x2="125" y2="70"/>
+        <line class="geo-guide faint" x1="365" y1="128" x2="150" y2="190"/>
+        <circle class="geo-b" cx="125" cy="70" r="25"/><text class="geo-inside" x="125" y="76">B</text>
+        <circle class="geo-b" cx="150" cy="190" r="25"/><text class="geo-inside" x="150" y="196">B</text>
+        <circle class="geo-b" cx="455" cy="70" r="25"/><text class="geo-inside" x="455" y="76">B</text>
+        <polygon class="geo-x" points="365,94 399,128 365,162 331,128"/><text class="geo-inside" x="365" y="134">X</text>
+        <rect class="geo-label-bg" x="380" y="83" width="91" height="25" rx="5"/><text class="geo-label" x="425" y="100">shortest gap</text>
+        <text class="geo-note" x="280" y="230">Longer nearest-B distance = a larger geographic gap</text>
+      </svg>
+      <figcaption>The model draws a line from each X candidate to every B site and keeps the shortest line. Real calculations follow the curved Earth, not a flat sheet of paper.</figcaption>
+    </figure>
+    <div class="plain-explanation">
+      <h3>Think of umbrellas in the rain</h3>
+      <p>B sites are existing umbrellas. An X candidate standing far from every B umbrella may cover an exposed space. An X candidate beside a B umbrella probably adds less new geographic reach.</p>
+      <p><strong>Absolute scoring</strong> uses only this shortest distance in kilometres.</p>
+    </div>
+  </div>
+</section>
+
+<section class="panel help-section">
+  <h2>Step 2: Ask whether the area is crowded or spread out</h2>
+  <p>The same 3 km gap can mean something different in a city and in the countryside. Density scoring compares the X-to-B gap with the normal spacing of nearby B sites.</p>
+  <div class="diagram-pair">
+    <figure class="method-figure">
+      <svg viewBox="0 0 480 250" role="img" aria-labelledby="city-title city-desc">
+        <title id="city-title">Dense B network example</title>
+        <desc id="city-desc">Many circular B sites sit close together around one diamond X candidate. The X gap is unusually large for this dense area.</desc>
+        <text class="geo-heading" x="24" y="30">Dense area: B sites normally sit close</text>
+        <circle class="geo-b" cx="90" cy="95" r="19"/><text class="geo-inside small" x="90" y="100">B</text>
+        <circle class="geo-b" cx="175" cy="70" r="19"/><text class="geo-inside small" x="175" y="75">B</text>
+        <circle class="geo-b" cx="140" cy="160" r="19"/><text class="geo-inside small" x="140" y="165">B</text>
+        <circle class="geo-b" cx="230" cy="145" r="19"/><text class="geo-inside small" x="230" y="150">B</text>
+        <circle class="geo-b" cx="275" cy="75" r="19"/><text class="geo-inside small" x="275" y="80">B</text>
+        <polygon class="geo-x" points="395,106 421,132 395,158 369,132"/><text class="geo-inside small" x="395" y="137">X</text>
+        <line class="geo-guide" x1="395" y1="132" x2="275" y2="75"/>
+        <text class="geo-note" x="24" y="222">A large hole compared with nearby B spacing</text>
+      </svg>
+      <figcaption>Here, a gap stands out because nearby B sites are usually close together.</figcaption>
+    </figure>
+    <figure class="method-figure">
+      <svg viewBox="0 0 480 250" role="img" aria-labelledby="rural-title rural-desc">
+        <title id="rural-title">Sparse B network example</title>
+        <desc id="rural-desc">Only a few circular B sites sit far apart around one diamond X candidate. The X gap is normal for this sparse area.</desc>
+        <text class="geo-heading" x="24" y="30">Sparse area: B sites normally sit far apart</text>
+        <circle class="geo-b" cx="70" cy="85" r="19"/><text class="geo-inside small" x="70" y="90">B</text>
+        <circle class="geo-b" cx="200" cy="190" r="19"/><text class="geo-inside small" x="200" y="195">B</text>
+        <circle class="geo-b" cx="405" cy="65" r="19"/><text class="geo-inside small" x="405" y="70">B</text>
+        <polygon class="geo-x" points="295,79 321,105 295,131 269,105"/><text class="geo-inside small" x="295" y="110">X</text>
+        <line class="geo-guide" x1="295" y1="105" x2="405" y2="65"/>
+        <text class="geo-note" x="24" y="222">The same gap may be ordinary in this area</text>
+      </svg>
+      <figcaption>Here, a similar gap may not be unusual because the whole B network is widely spaced.</figcaption>
+    </figure>
+  </div>
+  <div class="formula"><code>density gap ratio = distance from X to nearest B ÷ typical spacing among nearby B sites</code></div>
+  <p class="formula-reading">A ratio above 1 means the gap is larger than the usual local B spacing. A ratio below 1 means the gap is smaller than the usual local spacing.</p>
+</section>
+
+<section class="panel help-section">
+  <h2>Step 3: Keep selected X sites useful as a group</h2>
+  <div class="diagram-layout">
+    <figure class="method-figure">
+      <svg viewBox="0 0 560 285" role="img" aria-labelledby="bubble-title bubble-desc">
+        <title id="bubble-title">Diversity circle around a selected X site</title>
+        <desc id="bubble-desc">A gold selected X hexagon has a circular diversity zone. One candidate inside the zone is marked redundant; another outside remains a useful candidate.</desc>
+        <circle class="geo-radius" cx="235" cy="142" r="103"/>
+        <line class="geo-radius-line" x1="235" y1="142" x2="338" y2="142"/>
+        <text class="geo-label" x="283" y="132">diversity radius</text>
+        <polygon class="geo-selected" points="235,106 266,124 266,160 235,178 204,160 204,124"/><text class="geo-inside" x="235" y="149">✓</text>
+        <polygon class="geo-redundant" points="302,54 329,81 302,108 275,81"/><text class="geo-danger-text" x="302" y="87">×</text>
+        <text class="geo-label" x="348" y="84">too close</text>
+        <polygon class="geo-x" points="450,167 479,196 450,225 421,196"/><text class="geo-inside" x="450" y="202">X</text>
+        <text class="geo-label" x="382" y="252">far enough to add spread</text>
+        <text class="geo-note" x="24" y="270">The circle can change size from place to place.</text>
+      </svg>
+      <figcaption>Once an X site is selected, nearby candidates lose points. With a hard minimum spacing rule, a candidate that is too close is removed.</figcaption>
+    </figure>
+    <div class="plain-explanation">
+      <h3>Why the circle changes size</h3>
+      <p>With <strong>automatic diversity distance</strong>, the circle uses local B spacing. It is smaller in dense areas and larger in sparse areas. This avoids using one city-sized rule everywhere.</p>
+      <p><strong>Diversity penalty:</strong> reduces the score of an X site close to a selected X site.</p>
+      <p><strong>Saturation penalty:</strong> reduces the score again when several selected X sites already fall inside its local circle.</p>
+      <p><strong>Hard spacing:</strong> can completely reject a candidate that is too close. Leave it at 0 when you want soft ranking only.</p>
+    </div>
+  </div>
+</section>
+
+<section class="panel help-section">
+  <h2>Step 4: Build the portfolio one site at a time</h2>
+  <figure class="method-figure portfolio-figure">
+    <svg viewBox="0 0 1020 310" role="img" aria-labelledby="portfolio-title portfolio-desc">
+      <title id="portfolio-title">Three rounds of greedy portfolio selection</title>
+      <desc id="portfolio-desc">Three panels show the best X site selected first, nearby candidates losing points second, and a spread-out final portfolio third.</desc>
+      <text class="geo-heading" x="30" y="34">1. Pick the best current score</text>
+      <circle class="geo-b" cx="75" cy="100" r="18"/><text class="geo-inside small" x="75" y="105">B</text>
+      <circle class="geo-b" cx="250" cy="205" r="18"/><text class="geo-inside small" x="250" y="210">B</text>
+      <polygon class="geo-selected" points="205,66 228,79 228,105 205,118 182,105 182,79"/><text class="geo-inside small" x="205" y="97">✓</text>
+      <polygon class="geo-x" points="135,175 157,197 135,219 113,197"/><text class="geo-inside small" x="135" y="202">X</text>
+      <line class="geo-divider" x1="335" y1="40" x2="335" y2="270"/>
+      <text class="geo-heading" x="365" y="34">2. Recalculate nearby X scores</text>
+      <circle class="geo-radius" cx="445" cy="100" r="62"/>
+      <polygon class="geo-selected" points="445,72 469,86 469,114 445,128 421,114 421,86"/><text class="geo-inside small" x="445" y="105">✓</text>
+      <polygon class="geo-redundant" points="500,120 522,142 500,164 478,142"/><text class="geo-danger-text small" x="500" y="147">×</text>
+      <polygon class="geo-x" points="610,185 632,207 610,229 588,207"/><text class="geo-inside small" x="610" y="212">X</text>
+      <text class="geo-note" x="365" y="264">Near sites lose points; distant sites keep more.</text>
+      <line class="geo-divider" x1="680" y1="40" x2="680" y2="270"/>
+      <text class="geo-heading" x="710" y="34">3. Repeat until the target is reached</text>
+      <polygon class="geo-selected" points="765,65 789,79 789,107 765,121 741,107 741,79"/><text class="geo-inside small" x="765" y="100">✓</text>
+      <polygon class="geo-selected" points="915,126 939,140 939,168 915,182 891,168 891,140"/><text class="geo-inside small" x="915" y="161">✓</text>
+      <polygon class="geo-selected" points="790,198 814,212 814,240 790,254 766,240 766,212"/><text class="geo-inside small" x="790" y="233">✓</text>
+      <line class="geo-spread" x1="780" y1="115" x2="896" y2="145"/><line class="geo-spread" x1="896" y1="177" x2="811" y2="214"/><line class="geo-spread" x1="777" y1="201" x2="770" y2="121"/>
+      <text class="geo-note" x="710" y="284">Result: strong gaps plus a better-spread portfolio</text>
+    </svg>
+    <figcaption>This is called a greedy process: choose the best site now, update the situation, and choose again. “Greedy” describes the step-by-step method; it does not mean every early winner is globally perfect.</figcaption>
+  </figure>
+  <div class="formula"><code>marginal score = gap score × [1 − diversity weight × diversity penalty − saturation weight × saturation penalty]</code></div>
+  <div class="score-example"><strong>Simple example:</strong> an X site starts with 80 gap points. Nearby selected sites create a 10-point diversity reduction and a 5-point saturation reduction. Its current value becomes about 65 points. This is an illustration; the app uses factors between 0 and 1.</div>
+</section>
+
+<section class="panel help-section">
+  <h2>Recommended starting values</h2>
+  <p>Start with the defaults. Change one setting at a time, rerun, and compare both the selected count and the map.</p>
+  <div class="table-scroll"><table><thead><tr><th>Parameter</th><th>Good starting value</th><th>Plain-language meaning</th><th>When to change it</th></tr></thead><tbody>
+    <tr><td>Scoring</td><td>Density</td><td>Judges a gap relative to normal B spacing nearby.</td><td>Use absolute only when kilometres alone should decide priority.</td></tr>
+    <tr><td>Local B neighbours</td><td>5</td><td>Uses the five nearby B sites to estimate normal local spacing.</td><td>Use 3 for sharper local changes; 7–10 for a smoother estimate.</td></tr>
+    <tr><td>Local X neighbours</td><td>5</td><td>Uses nearby X candidates to describe how crowded the X inventory is.</td><td>Use 3 for irregular sparse data; 7–10 for a smoother diagnostic.</td></tr>
+    <tr><td>Diversity distance</td><td>Blank / automatic</td><td>Lets the spacing circle grow or shrink with local B spacing.</td><td>Enter kilometres only when business policy requires one fixed distance everywhere.</td></tr>
+    <tr><td>Diversity weight</td><td>0.20</td><td>How strongly one selected X site pushes nearby X candidates down the list.</td><td>Raise gradually toward 0.30 when selected sites still bunch together.</td></tr>
+    <tr><td>Saturation weight</td><td>0.10</td><td>Extra reduction when several selected X sites already cover the same local circle.</td><td>Raise when one locality receives too many selections.</td></tr>
+    <tr><td>Minimum spacing ratio</td><td>0</td><td>0 means no automatic rejection; penalties only change order.</td><td>Try 0.5 when near-duplicates must be removed. A value of 1 is stricter.</td></tr>
+  </tbody></table></div>
+</section>
+
+<section class="help-grid">
+  <article class="panel help-section"><h2>Fixed-count mode</h2><p>Use this when the agreement or budget says exactly how many sites may be chosen. The model keeps picking the best current candidate until it reaches the count. A hard spacing rule can leave fewer sites if too many candidates overlap.</p><h3>Suggested baseline</h3><p>Density scoring, required count, 5 local B neighbours, 5 local X neighbours, automatic diversity, weights 0.20 and 0.10, minimum spacing 0.</p></article>
+  <article class="panel help-section"><h2>Threshold mode</h2><p>Use this when every site above a geographic-gap rule should qualify. <strong>Select all qualifying sites</strong> keeps them all; diversity changes their order only. <strong>De-clustered portfolio</strong> can remove sites that break the hard spacing rule.</p></article>
+</section>
+
+<section class="panel help-section"><h2>How to read the output</h2><dl class="definition-grid"><div><dt>Local X spacing</dt><dd>Typical distance between nearby X candidates. Small means a crowded candidate cluster.</dd></div><div><dt>X/B spacing ratio</dt><dd>Local X spacing divided by local B spacing. Below 1 means X candidates are packed more tightly than B sites nearby.</dd></div><div><dt>Nearest selected X</dt><dd>Distance to the closest X site already chosen at that selection step.</dd></div><div><dt>Selected-X neighbours</dt><dd>Number of already selected X sites inside the candidate’s local diversity circle.</dd></div><div><dt>Diversity factor</dt><dd>A 0-to-1 separation measure. A value of 1 means the candidate meets or exceeds its spacing target.</dd></div><div><dt>Saturation factor</dt><dd>Falls as more selected sites appear in the same local circle.</dd></div><div><dt>Marginal score</dt><dd>The gap value after diversity and saturation reductions. The highest current value is picked next.</dd></div><div><dt>Redundancy filtered</dt><dd>The site passed the gap rule but failed the optional hard X-to-X spacing rule.</dd></div></dl></section>
+
+<section class="panel help-section"><h2>A safe tuning sequence</h2><ol class="tuning-list"><li>Run the recommended baseline with minimum spacing ratio 0.</li><li>On the map, confirm that the larger gold Selected X circles fill useful spaces.</li><li>Look for gold circles bunching together and inspect nearest-selected-X distances.</li><li>If needed, raise diversity weight from 0.20 to 0.25, then 0.30.</li><li>If one area still receives too many choices, raise saturation weight slightly.</li><li>Only when near-duplicates must be prohibited, try minimum spacing ratio 0.5.</li><li>Validate the final shortlist with RF prediction, sectors, bands, terrain, traffic, capacity, cost, and field evidence.</li></ol></section>
+
+<section class="help-grid"><article class="panel help-section"><h2>Calculation performance</h2><p>The engine uses fast in-memory nearest-neighbour searches. A spatial database is not needed for the expected 6,000 B sites and 12,000 X sites in Phase 1.</p></article><article class="panel help-section"><h2>Map loading</h2><p>Selected X sites are larger gold circles and are drawn after other sites so they stay visible. Map points render locally in batches; only the OpenStreetMap background tiles require internet.</p></article></section>
+{% endblock %}

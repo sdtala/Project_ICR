@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "icr-site-selector"
+version = "0.1.0"
+description = "Geospatial prioritization of intra-circle roaming sites"
+requires-python = ">=3.11"
+dependencies = [
+  "Flask>=3.1,<4",
+  "numpy>=2.0",
+  "pandas>=2.2",
+  "scipy>=1.13",
+]
+
+[project.scripts]
+icr-select = "icr_analysis.cli:main"
+icr-web = "icr_analysis.web:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+icr_analysis = ["templates/*.html", "static/*.css", "static/*.js", "static/*.svg", "static/vendor/leaflet/*", "static/vendor/leaflet/images/*", "sample_data/*.csv"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}X footprint replication · ICR Site Selector{% endblock %}
+{% block brand_subtitle %}Operator X footprint replication{% endblock %}
+{% block page_class %}replication-page{% endblock %}
+{% block header_nav %}<a href="{{ url_for('index') }}">B gap-filling workflow</a><a href="{{ url_for('replication_help') }}">Replication guide</a>{% endblock %}
+{% block content %}
+<section class="hero replication-hero">
+  <div>
+    <p class="eyebrow">Separate planning strategy</p>
+    <h1>Replicate a balanced percentage of Operator X’s site plan.</h1>
+    <p class="hero-copy">Create a density-preserving, geographically spread sample of X sites, remove locations already represented by nearby B sites, and optionally refill from the same locality.</p>
+  </div>
+  <aside class="proxy-note replication-note"><strong>Different objective</strong><span>This workflow imitates X’s deployment pattern. It does not use the earlier B-gap ranking and does not claim RF coverage percentage.</span></aside>
+</section>
+
+{% if cleared %}<div class="notice success">The temporary replication run and its files were deleted.</div>{% endif %}
+{% if errors.form %}<div class="notice error" role="alert">{{ errors.form }}</div>{% endif %}
+
+<div class="strategy-separation"><strong>You are in X Footprint Replication</strong><span>For maximum B geographic-gap improvement from a limited count, use the <a href="{{ url_for('index') }}">original gap-filling workflow</a>.</span></div>
+
+<div class="form-layout">
+  <form class="analysis-form card replication-form" action="{{ url_for('create_replication_run') }}" method="post" enctype="multipart/form-data" data-replication-form>
+    <div class="section-heading"><span>01</span><div><h2>Site inventories</h2><p>CSV columns: siteid, latitude, longitude.</p></div></div>
+    <div class="field-grid">
+      <label class="field"><span>Operator B display name</span><input name="operator_b_name" maxlength="80" value="{{ values.operator_b_name }}"></label>
+      <label class="field"><span>Operator X display name</span><input name="operator_x_name" maxlength="80" value="{{ values.operator_x_name }}"></label>
+      <label class="field file-field"><span>Operator B CSV <b>Required</b></span><input type="file" name="operator_b_csv" accept=".csv,text/csv" required>{% if errors.operator_b_csv %}<em>{{ errors.operator_b_csv }}</em>{% endif %}</label>
+      <label class="field file-field"><span>Operator X CSV <b>Required</b></span><input type="file" name="operator_x_csv" accept=".csv,text/csv" required>{% if errors.operator_x_csv %}<em>{{ errors.operator_x_csv }}</em>{% endif %}</label>
+    </div>
+
+    <div class="section-heading"><span>02</span><div><h2>Represent Operator X’s footprint</h2><p>The percentage is applied across local zones, then sites are spread within each zone.</p></div></div>
+    <div class="field-grid">
+      <label class="field"><span>X site-retention target (%)</span><input type="number" min="0.01" max="100" step="0.01" name="retention_percent" value="{{ values.retention_percent }}"><small>70 means approximately 70% of valid X sites—not 70% RF coverage.</small>{% if errors.retention_percent %}<em>{{ errors.retention_percent }}</em>{% endif %}</label>
+      <label class="field"><span>Local X neighbours</span><input type="number" min="1" step="1" name="x_local_k" value="{{ values.x_local_k }}"><small>Describes typical X spacing. Recommended: 5.</small>{% if errors.x_local_k %}<em>{{ errors.x_local_k }}</em>{% endif %}</label>
+    </div>
+
+    <div class="section-heading"><span>03</span><div><h2>Remove overlap with Operator B</h2><p>A representative X site is removed when its nearest B site falls inside the configured overlap distance.</p></div></div>
+    <div class="field-grid">
+      <label class="field"><span>B-overlap method</span><select name="overlap_mode" id="overlap-mode"><option value="adaptive" {% if values.overlap_mode == 'adaptive' %}selected{% endif %}>Adaptive to local B spacing</option><option value="fixed" {% if values.overlap_mode == 'fixed' %}selected{% endif %}>Fixed distance in kilometres</option></select>{% if errors.overlap_mode %}<em>{{ errors.overlap_mode }}</em>{% endif %}</label>
+      <label class="field" id="overlap-ratio-field"><span>Adaptive overlap ratio</span><input type="number" min="0" step="0.05" name="overlap_ratio" value="{{ values.overlap_ratio }}"><small>Overlap distance = ratio × local B spacing. Recommended start: 0.40.</small>{% if errors.overlap_ratio %}<em>{{ errors.overlap_ratio }}</em>{% endif %}</label>
+      <label class="field" id="overlap-km-field"><span>Fixed overlap distance (km)</span><input type="number" min="0" step="any" name="overlap_km" value="{{ values.overlap_km }}"><small>Used only in fixed-distance mode.</small>{% if errors.overlap_km %}<em>{{ errors.overlap_km }}</em>{% endif %}</label>
+      <label class="form-check-field"><input type="checkbox" name="refill_within_zone" value="yes" {% if values.refill_within_zone %}checked{% endif %}><span><strong>Refill within the same locality</strong><small>Replace an overlap-removed site with the next well-spread X site from that zone when possible.</small></span></label>
+    </div>
+
+    <details class="advanced" {% if errors.b_local_k or errors.zone_scale or errors.min_per_zone %}open{% endif %}>
+      <summary>Advanced geographic-zone settings</summary>
+      <div class="field-grid compact">
+        <label class="field"><span>Local B neighbours</span><input type="number" min="1" step="1" name="b_local_k" value="{{ values.b_local_k }}"><small>Used to estimate local B spacing for adaptive overlap. Recommended: 5.</small>{% if errors.b_local_k %}<em>{{ errors.b_local_k }}</em>{% endif %}</label>
+        <label class="field"><span>Zone scale</span><input type="number" min="0.1" step="0.5" name="zone_scale" value="{{ values.zone_scale }}"><small>Zone width ÷ typical X spacing. Recommended: 4. Lower values create more local zones.</small>{% if errors.zone_scale %}<em>{{ errors.zone_scale }}</em>{% endif %}</label>
+        <label class="field"><span>Minimum retained per occupied zone</span><input type="number" min="0" step="1" name="min_per_zone" value="{{ values.min_per_zone }}"><small>Recommended: 1. Applied only when the overall target is large enough.</small>{% if errors.min_per_zone %}<em>{{ errors.min_per_zone }}</em>{% endif %}</label>
+      </div>
+      <p class="advanced-note"><a href="{{ url_for('replication_help') }}">Open the replication methodology guide</a> for diagrams and tuning advice.</p>
+    </details>
+
+    <div class="submit-row"><div><strong>Separate replication analysis</strong><small>Maximum 25 MB per CSV · temporary retention: one hour</small></div><button class="primary-button" type="submit">Run footprint replication <span>→</span></button></div>
+  </form>
+
+  <aside class="side-stack">
+    <section class="card sample-card"><p class="eyebrow">Try this strategy</p><h2>Run the bundled replication example</h2><p>Retain 70% of X’s site plan, apply adaptive B overlap, and refill within each locality.</p><form action="{{ url_for('sample_replication_run') }}" method="post" data-replication-form><button class="secondary-button" type="submit">Run replication sample</button></form></section>
+    <section class="card method-card"><h2>How this workflow differs</h2><ol><li><b>Represent X locally</b><span>Allocate the target percentage across density-aware geographic zones.</span></li><li><b>Spread the choices</b><span>Prefer well-separated X sites inside each zone.</span></li><li><b>Subtract B overlap</b><span>Remove chosen X sites already represented by nearby B locations.</span></li><li><b>Refill locally</b><span>Keep the intended geography when a suitable same-zone replacement exists.</span></li></ol><a class="secondary-link method-link" href="{{ url_for('replication_help') }}">Replication methodology guide →</a></section>
+  </aside>
+</div>
+<div class="processing-overlay" id="processing" hidden><div class="spinner"></div><strong>Building the X footprint replica</strong><span>Estimating density, allocating local quotas, spreading sites, and removing B overlap…</span></div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='replication-form.js') }}"></script>{% endblock %}

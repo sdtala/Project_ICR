@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}New analysis · ICR Site Selector{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="eyebrow">Intra-circle roaming</p>
+    <h1>Find Operator X sites that extend Operator B’s geographic footprint.</h1>
+    <p class="hero-copy">Upload both site inventories, choose the portfolio rule, and receive an auditable shortlist with maps and management-ready exports.</p>
+  </div>
+  <aside class="proxy-note"><strong>Planning guardrail</strong><span>This model uses site coordinates only. It does not predict RF signal, capacity, traffic relief, or commercial value.</span></aside>
+</section>
+
+{% if cleared %}<div class="notice success">The temporary run and its files were deleted.</div>{% endif %}
+{% if errors.form %}<div class="notice error" role="alert">{{ errors.form }}</div>{% endif %}
+
+<div class="form-layout">
+  <form class="analysis-form card" action="{{ url_for('create_run') }}" method="post" enctype="multipart/form-data" data-analysis-form>
+    <div class="section-heading"><span>01</span><div><h2>Site inventories</h2><p>CSV columns: siteid, latitude, longitude.</p></div></div>
+    <div class="field-grid">
+      <label class="field"><span>Operator B display name</span><input name="operator_b_name" maxlength="80" value="{{ values.operator_b_name }}"></label>
+      <label class="field"><span>Operator X display name</span><input name="operator_x_name" maxlength="80" value="{{ values.operator_x_name }}"></label>
+      <label class="field file-field"><span>Operator B CSV <b>Required</b></span><input type="file" name="operator_b_csv" accept=".csv,text/csv" required>{% if errors.operator_b_csv %}<em>{{ errors.operator_b_csv }}</em>{% endif %}</label>
+      <label class="field file-field"><span>Operator X CSV <b>Required</b></span><input type="file" name="operator_x_csv" accept=".csv,text/csv" required>{% if errors.operator_x_csv %}<em>{{ errors.operator_x_csv }}</em>{% endif %}</label>
+    </div>
+
+    <div class="section-heading"><span>02</span><div><h2>Selection rule</h2><p>Choose how candidates qualify and how the portfolio is ranked.</p></div></div>
+    <div class="field-grid">
+      <label class="field"><span>Selection mode</span><select name="mode" id="mode"><option value="fixed_count" {% if values.mode == 'fixed_count' %}selected{% endif %}>Fixed site count</option><option value="distance_threshold" {% if values.mode == 'distance_threshold' %}selected{% endif %}>Distance threshold</option></select>{% if errors.mode %}<em>{{ errors.mode }}</em>{% endif %}</label>
+      <label class="field"><span>Scoring method</span><select name="criterion" id="criterion"><option value="density" {% if values.criterion == 'density' %}selected{% endif %}>Density-adjusted gap</option><option value="absolute" {% if values.criterion == 'absolute' %}selected{% endif %}>Absolute nearest-B distance</option></select>{% if errors.criterion %}<em>{{ errors.criterion }}</em>{% endif %}</label>
+      <label class="field" id="count-field"><span>Sites to select</span><input type="number" min="1" step="1" name="count" value="{{ values.count }}">{% if errors.count %}<em>{{ errors.count }}</em>{% endif %}</label>
+      <label class="field" id="prefilter-field"><span>Optional pre-filter</span><select name="prefilter" id="prefilter"><option value="none" {% if values.prefilter == 'none' %}selected{% endif %}>No pre-filter</option><option value="absolute" {% if values.prefilter == 'absolute' %}selected{% endif %}>Absolute distance</option><option value="density" {% if values.prefilter == 'density' %}selected{% endif %}>Density ratio</option></select>{% if errors.prefilter %}<em>{{ errors.prefilter }}</em>{% endif %}</label>
+      <label class="field" id="threshold-field"><span>Threshold <small id="threshold-unit"></small></span><input type="number" min="0" step="any" name="threshold" value="{{ values.threshold }}">{% if errors.threshold %}<em>{{ errors.threshold }}</em>{% endif %}</label>
+      <label class="field" id="threshold-portfolio-field"><span>Threshold portfolio</span><select name="threshold_portfolio" id="threshold-portfolio"><option value="all_eligible" {% if values.threshold_portfolio == 'all_eligible' %}selected{% endif %}>Select all qualifying sites</option><option value="declustered" {% if values.threshold_portfolio == 'declustered' %}selected{% endif %}>Create a de-clustered portfolio</option></select><small>De-clustering applies the minimum X-to-X separation below.</small>{% if errors.threshold_portfolio %}<em>{{ errors.threshold_portfolio }}</em>{% endif %}</label>
+    </div>
+
+    <details class="advanced" {% if errors.local_k or errors.x_local_k or errors.diversity_km or errors.diversity_weight or errors.saturation_weight or errors.min_separation_ratio or errors.weights %}open{% endif %}>
+      <summary>Advanced portfolio settings</summary>
+      {% if errors.weights %}<div class="inline-error">{{ errors.weights }}</div>{% endif %}
+      <div class="field-grid compact">
+        <label class="field"><span>Local B neighbours</span><input type="number" min="1" step="1" name="local_k" value="{{ values.local_k }}"><small>Nearby B sites used to estimate local B spacing. Recommended: 5.</small>{% if errors.local_k %}<em>{{ errors.local_k }}</em>{% endif %}</label>
+        <label class="field"><span>Local X neighbours</span><input type="number" min="1" step="1" name="x_local_k" value="{{ values.x_local_k }}"><small>Nearby X alternatives used to estimate candidate density. Recommended: 5.</small>{% if errors.x_local_k %}<em>{{ errors.x_local_k }}</em>{% endif %}</label>
+        <label class="field"><span>Diversity distance override (km)</span><input type="number" min="0" step="any" name="diversity_km" value="{{ values.diversity_km }}" placeholder="Adaptive by locality"><small>Leave blank to use each candidate’s local B spacing; use a value only for a circle-wide standard.</small>{% if errors.diversity_km %}<em>{{ errors.diversity_km }}</em>{% endif %}</label>
+        <label class="field"><span>Minimum X-to-X spacing ratio</span><input type="number" min="0" step="any" name="min_separation_ratio" id="min-separation-ratio" value="{{ values.min_separation_ratio }}"><small>Hard separation ÷ local B spacing. 0 disables; 0.5 is a useful de-clustering start.</small>{% if errors.min_separation_ratio %}<em>{{ errors.min_separation_ratio }}</em>{% endif %}</label>
+        <label class="field"><span>Diversity weight</span><input type="number" min="0" max="1" step="0.05" name="diversity_weight" value="{{ values.diversity_weight }}"><small>Penalty for closeness to an already selected X site. Recommended: 0.20.</small>{% if errors.diversity_weight %}<em>{{ errors.diversity_weight }}</em>{% endif %}</label>
+        <label class="field"><span>Saturation weight</span><input type="number" min="0" max="1" step="0.05" name="saturation_weight" value="{{ values.saturation_weight }}"><small>Penalty for several selected X sites in the same local radius. Recommended: 0.10.</small>{% if errors.saturation_weight %}<em>{{ errors.saturation_weight }}</em>{% endif %}</label>
+      </div>
+      <p class="advanced-note">The remaining score weight stays with the coverage-gap value. Diversity plus saturation must not exceed 1. <a href="{{ url_for('help_page') }}">Open the full parameter guide</a>.</p>
+    </details>
+
+    <div class="submit-row"><div><strong>Files are processed locally</strong><small>Maximum 25 MB per CSV · temporary retention: one hour</small></div><button class="primary-button" type="submit">Run site selection <span>→</span></button></div>
+  </form>
+
+  <aside class="side-stack">
+    <section class="card sample-card"><p class="eyebrow">Try the workflow</p><h2>Run the bundled example</h2><p>Generate a five-site density-based shortlist using the included synthetic site inventories.</p><form action="{{ url_for('sample_run') }}" method="post" data-analysis-form><button class="secondary-button" type="submit">Run sample analysis</button></form></section>
+    <section class="card method-card"><h2>What the score measures</h2><ol><li><b>Coverage gap</b><span>Distance from X to B, optionally normalized for local B density.</span></li><li><b>X-to-X diversity</b><span>Spacing from the sites already placed in the selected portfolio.</span></li><li><b>Portfolio saturation</b><span>Penalty when several selected X sites occupy the same local radius.</span></li></ol><a class="secondary-link method-link" href="{{ url_for('help_page') }}">Methodology and parameter guide →</a></section>
+  </aside>
+</div>
+<div class="processing-overlay" id="processing" hidden><div class="spinner"></div><strong>Running site selection</strong><span>Validating coordinates, scoring gaps, and preparing outputs…</span></div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='form.js') }}"></script>{% endblock %}

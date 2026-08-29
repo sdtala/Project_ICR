@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · ICR Site Selector{% endblock %}
+{% block content %}<section class="empty-state card"><span>404</span><h1>{{ title }}</h1><p>{{ message }}</p><a class="primary-button" href="{{ url_for('index') }}">Start a new analysis</a></section>{% endblock %}
+
